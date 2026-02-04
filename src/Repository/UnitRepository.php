@@ -70,6 +70,19 @@ class UnitRepository extends ServiceEntityRepository
             ->distinct();
     }
 
+    public function createSearchVisibleForUserQueryBuilder(User $user, ?string $q): QueryBuilder
+    {
+        $qb = $this->createVisibleForUserQueryBuilder($user);
+
+        if ($q) {
+            $qb->andWhere('u.code LIKE :q OR u.name LIKE :q')
+                ->setParameter('q', '%'.$q.'%');
+        }
+
+        return $qb;
+    }
+
+
     public function findVisibleForUser(User $user): array
     {
         return $this->createVisibleForUserQueryBuilder($user)

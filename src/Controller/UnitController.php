@@ -56,6 +56,7 @@ final class UnitController extends AbstractController
     #[Route('/{id}', name: 'app_unit_show', methods: ['GET'])]
     public function show(Unit $unit): Response
     {
+        $this->denyAccessUnlessGranted('UNIT_VIEW', $unit);
         return $this->render('unit/show.html.twig', [
             'unit' => $unit,
         ]);
