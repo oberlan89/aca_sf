@@ -1,0 +1,39 @@
+{% set route = app.request.attributes.get('_route') %}
+
+<div class="offcanvas offcanvas-start aca-sidebar" tabindex="-1" id="acaSidebar">
+    <div class="offcanvas-header">
+        <div class="d-flex align-items-center gap-2">
+            <img src="{{ asset('images/escudo_edomex.svg') }}" alt="Escudo" style="height:42px;">
+            <div>
+                <div class="fw-bold">ACA</div>
+                <div class="aca-label">Archivo y Control Administrativo</div>
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    </div>
+
+    <div class="offcanvas-body">
+        <nav class="d-grid gap-1">
+            <a class="nav-link {% if route == 'app_home' %}active{% endif %}" href="{{ path('app_home') }}">
+                <i class="fa-solid fa-house me-2"></i> Inicio
+            </a>
+
+            <a class="nav-link {% if route starts with 'app_unit' %}active{% endif %}" href="{{ path('app_unit_index') }}">
+                <i class="fa-solid fa-sitemap me-2"></i> Unidades
+            </a>
+
+            {% if is_granted('ROLE_ADMIN') %}
+                <hr>
+                <div class="aca-label">Administración</div>
+
+                <a class="nav-link {% if route starts with 'app_user' %}active{% endif %}" href="{{ path('app_user_index') }}">
+                    <i class="fa-solid fa-users me-2"></i> Usuarios
+                </a>
+
+                <a class="nav-link {% if route starts with 'app_servant' %}active{% endif %}" href="{{ path('app_servant_index') }}">
+                    <i class="fa-solid fa-id-badge me-2"></i> Servidores públicos
+                </a>
+            {% endif %}
+        </nav>
+    </div>
+</div>

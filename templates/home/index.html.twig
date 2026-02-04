@@ -1,0 +1,64 @@
+{% extends 'content_base.html.twig' %}
+
+{% block content_title %}ACA{% endblock %}
+
+{% block body %}
+    <h1>My Units</h1>
+
+    <p>
+        Logged in as <strong>{{ app.user.email }}</strong>
+    </p>
+
+    <p>
+        Units visible: <strong>{{ units|length }}</strong>
+    </p>
+
+    {% if assignments is not null %}
+        <h2>My assignments</h2>
+
+        <table>
+            <thead>
+            <tr>
+                <th>Code</th>
+                <th>Unit</th>
+                <th>Assignment</th>
+                <th>Scope</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for ua in assignments %}
+                <tr>
+                    <td>{{ ua.unit.code }}</td>
+                    <td>{{ ua.unit.name }}</td>
+                    <td>{{ ua.assignment.value }}</td>
+                    <td>{{ ua.scope }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+    {% else %}
+        <h2>Units</h2>
+
+        <table>
+            <thead>
+            <tr>
+                <th>Code</th>
+                <th>Unit</th>
+                <th>Team</th>
+                <th>Subfondo</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for u in units %}
+                <tr>
+                    <td>{{ u.code }}</td>
+                    <td>{{ u.name }}</td>
+                    <td>{{ u.team ? u.team.number : '' }}</td>
+                    <td>{{ u.subfondo ? u.subfondo.name : '' }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+{% endblock %}

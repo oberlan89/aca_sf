@@ -1,0 +1,54 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Servant{% endblock %}
+
+{% block body %}
+    <h1>Servant</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ servant.id }}</td>
+            </tr>
+            <tr>
+                <th>FirstName</th>
+                <td>{{ servant.firstName }}</td>
+            </tr>
+            <tr>
+                <th>LastName1</th>
+                <td>{{ servant.lastName1 }}</td>
+            </tr>
+            <tr>
+                <th>LastName2</th>
+                <td>{{ servant.lastName2 }}</td>
+            </tr>
+            <tr>
+                <th>Gender</th>
+                <td>{{ servant.gender }}</td>
+            </tr>
+            <tr>
+                <th>Email</th>
+                <td>{{ servant.email }}</td>
+            </tr>
+            <tr>
+                <th>BirthMonth</th>
+                <td>{{ servant.birthMonth }}</td>
+            </tr>
+            <tr>
+                <th>BirthDay</th>
+                <td>{{ servant.birthDay }}</td>
+            </tr>
+            <tr>
+                <th>Key</th>
+                <td>{{ servant.key }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_servant_index') }}">back to list</a>
+
+    <a href="{{ path('app_servant_edit', {'id': servant.id}) }}">edit</a>
+
+    {{ include('servant/_delete_form.html.twig') }}
+{% endblock %}

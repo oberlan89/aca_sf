@@ -1,0 +1,49 @@
+{% extends 'content_base.html.twig' %}
+
+{% block content_title %}Servidores públicos{% endblock %}
+
+{% block body %}
+    <h1>Servant index</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>FirstName</th>
+                <th>LastName1</th>
+                <th>LastName2</th>
+                <th>Gender</th>
+                <th>Email</th>
+                <th>BirthMonth</th>
+                <th>BirthDay</th>
+                <th>Key</th>
+                <th>actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for servant in servants %}
+            <tr>
+                <td>{{ servant.id }}</td>
+                <td>{{ servant.firstName }}</td>
+                <td>{{ servant.lastName1 }}</td>
+                <td>{{ servant.lastName2 }}</td>
+                <td>{{ servant.genderString }}</td>
+                <td>{{ servant.email }}</td>
+                <td>{{ servant.birthMonth }}</td>
+                <td>{{ servant.birthDay }}</td>
+                <td>{{ servant.key }}</td>
+                <td>
+                    <a href="{{ path('app_servant_show', {'id': servant.id}) }}">show</a>
+                    <a href="{{ path('app_servant_edit', {'id': servant.id}) }}">edit</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="10">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ path('app_servant_new') }}">Create new</a>
+{% endblock %}

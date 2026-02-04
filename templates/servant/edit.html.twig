@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Servant{% endblock %}
+
+{% block body %}
+    <h1>Edit Servant</h1>
+
+    {{ include('servant/_form.html.twig', {'button_label': 'Update'}) }}
+
+    <a href="{{ path('app_servant_index') }}">back to list</a>
+
+    {{ include('servant/_delete_form.html.twig') }}
+{% endblock %}

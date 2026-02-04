@@ -1,0 +1,129 @@
+:root{
+    --aca-primary: #9b2242;   /* vino */
+    --aca-secondary: #BC955C; /* dorado */
+    --aca-bg: #f6f7f9;        /* fondo claro */
+    --aca-text: #1f2937;
+    --aca-muted: #6b7280;
+}
+
+body{
+    background: var(--aca-bg);
+    color: var(--aca-text);
+}
+
+/* Topbar with your gradient, but only there (white predominates) */
+.aca-topbar{
+    background: radial-gradient(102.21% 102.21% at 50% 28.75%, #9b2242 42.62%, #BC955C 100%);
+    border-bottom: 1px solid rgba(255,255,255,.25);
+}
+
+.aca-topbar a,
+.aca-topbar .nav-link{
+    color: #fff;
+}
+
+.aca-topbar a:hover{ opacity: .9; }
+
+/* White content cards */
+.aca-surface{
+    background: #fff;
+    border: 1px solid rgba(155,34,66,.12);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(16,24,40,.06);
+}
+
+/* Interactive cards like the maintenance app */
+.aca-card{
+    background: #fff;
+    border: 1px solid rgba(155,34,66,.14);
+    border-left: 8px solid var(--aca-secondary);
+    border-radius: 16px;
+    transition: transform .08s ease, box-shadow .08s ease, border-color .08s ease;
+}
+
+.aca-card:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 14px 35px rgba(16,24,40,.10);
+    border-color: rgba(155,34,66,.22);
+}
+
+.aca-badge{
+    background: rgba(188,149,92,.18);
+    color: #3b2c1a;
+    border: 1px solid rgba(188,149,92,.35);
+}
+
+.btn-aca-primary{
+    background: var(--aca-primary);
+    border-color: var(--aca-primary);
+    color: #fff;
+}
+
+.btn-aca-primary:hover{
+    filter: brightness(.95);
+    color: #fff;
+}
+
+.btn-aca-secondary{
+    background: var(--aca-secondary);
+    border-color: var(--aca-secondary);
+    color: #2b1b0e;
+}
+
+/* Sidebar */
+.aca-sidebar .nav-link{
+    color: var(--aca-text);
+    border-radius: 10px;
+}
+
+.aca-sidebar .nav-link:hover{
+    background: rgba(155,34,66,.06);
+}
+
+.aca-sidebar .nav-link.active{
+    background: rgba(155,34,66,.10);
+    color: var(--aca-primary);
+    font-weight: 600;
+}
+
+/* Small helper for labels */
+.aca-label{
+    font-size: .8rem;
+    color: var(--aca-muted);
+}
+
+.aca-icon-btn{
+    background: rgba(255,255,255,.16);
+    border: 1px solid rgba(255,255,255,.35);
+    color: #fff;
+}
+
+.aca-icon-btn:hover{
+    background: rgba(255,255,255,.25);
+    color: #fff;
+}
+
+.aca-label{
+    font-size: .82rem;
+    color: #6b7280; /* neutral text */
+}
+
+.aca-unit-name{
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--aca-primary); /* burgundy title */
+    line-height: 1.2;
+}
+
+.aca-unit-code{
+    color: #6b7280; /* code is secondary */
+    font-size: .85rem;
+}
+
+a.aca-card-link{
+    color: inherit;
+    text-decoration: none;
+}
+a.aca-card-link:hover{
+    color: inherit;
+}
