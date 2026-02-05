@@ -36,6 +36,8 @@ final class UnitController extends AbstractController
     #[Route('/new', name: 'app_unit_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
+        $this->denyAccessUnlessGranted('UNIT_CREATE');
+
         $unit = new Unit();
         $form = $this->createForm(UnitType::class, $unit);
         $form->handleRequest($request);
@@ -65,6 +67,7 @@ final class UnitController extends AbstractController
     #[Route('/{id}/edit', name: 'app_unit_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Unit $unit, EntityManagerInterface $entityManager): Response
     {
+        $this->denyAccessUnlessGranted('UNIT_EDIT', $unit);
         $form = $this->createForm(UnitType::class, $unit);
         $form->handleRequest($request);
 
@@ -83,6 +86,7 @@ final class UnitController extends AbstractController
     #[Route('/{id}', name: 'app_unit_delete', methods: ['POST'])]
     public function delete(Request $request, Unit $unit, EntityManagerInterface $entityManager): Response
     {
+        $this->denyAccessUnlessGranted('UNIT_EDIT', $unit);
         if ($this->isCsrfTokenValid('delete'.$unit->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($unit);
             $entityManager->flush();

@@ -29,19 +29,18 @@ class UnitRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function createVisibleForUserQueryBuilder(User $user): QueryBuilder
+    public function createVisibleForUserQueryBuilder(User $user = null): QueryBuilder
     {
-        $qb = $this->createQueryBuilder('u')
-            ->andWhere('u.isGenerating = true')
-            ->leftJoin('u.team', 't')->addSelect('t')
-            ->leftJoin('u.subfondo', 'sf')->addSelect('sf')
-            ->orderBy('u.code', 'ASC');
+        $queryBuilder = $this->addOrderedByCodeQueryBuilder()
+            ->leftJoin('unit.team', 'team')
+            ->leftJoin('unit.subfondo', 'subfondo')
+            ->leftJoin('unit.unitAssignments', 'unitAssignment');
 
         $roles = $user->getRoles();
 
         // Admin: all generating units
         if (in_array('ROLE_ADMIN', $roles, true)) {
-            return $qb;
+            return $queryBuilder;
         }
 
         // Advisors: generating units that belong to their team
@@ -49,45 +48,52 @@ class UnitRepository extends ServiceEntityRepository
             $team = $user->getTeam();
             if (!$team) {
                 // no team assigned -> show none
-                return $qb->andWhere('1 = 0');
+                return $queryBuilder->andWhere('1 = 0');
             }
 
-            return $qb
-                ->andWhere('u.team = :team')
+            return $queryBuilder->andWhere('team = :team')
                 ->setParameter('team', $team);
         }
 
         // Portal users: generating units where servant has assignments
         $servant = $user->getServant();
         if (!$servant) {
-            return $qb->andWhere('1 = 0');
+            return $queryBuilder->andWhere('1 = 0');
         }
 
-        return $qb
-            ->innerJoin('u.unitAssignments', 'ua')
-            ->andWhere('ua.servant = :servant')
+        return $queryBuilder->andWhere('unitAssignment.servant = :servant')
             ->setParameter('servant', $servant)
             ->distinct();
     }
 
     public function createSearchVisibleForUserQueryBuilder(User $user, ?string $q): QueryBuilder
     {
-        $qb = $this->createVisibleForUserQueryBuilder($user);
+        $queryBuilder = $this->createVisibleForUserQueryBuilder($user)
+            ->leftJoin('team.users', 'user')
+            ->leftJoin('user.servant', 'servant')
+            ->distinct();
 
         if ($q) {
-            $qb->andWhere('u.code LIKE :q OR u.name LIKE :q')
-                ->setParameter('q', '%'.$q.'%');
+            $q = trim((string) $q);
+
+            $qLower = function_exists('mb_strtolower')
+                ? mb_strtolower($q, 'UTF-8')
+                : strtolower($q);
+
+            $queryBuilder->andWhere("LOWER(unit.code) LIKE :q OR LOWER(subfondo.name) LIKE :q OR LOWER(unit.name) LIKE :q OR CONCAT('', team.number) LIKE :q OR LOWER(user.email) LIKE :q OR LOWER(servant.firstName) LIKE :q OR LOWER(servant.lastName1) LIKE :q OR LOWER(servant.lastName2) LIKE :q")
+                ->setParameter('q', '%'.$qLower.'%');
         }
 
-        return $qb;
+        return $queryBuilder;
     }
 
 
     public function findVisibleForUser(User $user): array
     {
-        return $this->createVisibleForUserQueryBuilder($user)
-            ->getQuery()
-            ->getResult();
+
+            return $this->createVisibleForUserQueryBuilder($user)
+                ->getQuery()
+                ->getResult();
     }
 
     public function findGeneratingRoots(): array
@@ -100,15 +106,25 @@ class UnitRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function findGeneratingChildren(Unit $parent): array
+    public function findGeneratingChildren(Unit $parent = null): array
     {
-        return $this->createQueryBuilder('u')
-            ->andWhere('u.isGenerating = true')
-            ->andWhere('u.parent = :p')
-            ->setParameter('p', $parent)
-            ->orderBy('u.code', 'ASC')
-            ->getQuery()
+        $queryBuilder = $this->addOrderedByCodeQueryBuilder();
+
+        if ($parent) {
+            $queryBuilder->andWhere('unit.parent = :parent')
+                ->setParameter('parent', $parent);
+        }
+
+        return $queryBuilder->getQuery()
             ->getResult();
+    }
+
+    private function addOrderedByCodeQueryBuilder(QueryBuilder $queryBuilder = null): QueryBuilder
+    {
+        $queryBuilder = $queryBuilder ?? $this->createQueryBuilder('unit');
+
+        return $queryBuilder->orderBy('unit.code', 'ASC')
+            ->andWhere('unit.isGenerating = true');
     }
 
 

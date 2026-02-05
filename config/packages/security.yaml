@@ -51,6 +51,7 @@ security:
         - { path: ^/logout, roles: PUBLIC_ACCESS } # optional but harmless
         - { path: ^/user, roles: ROLE_ADMIN }
         - { path: ^/, roles: ROLE_USER }
+        - { path: ^/unit, roles: ROLE_ADMIN}
         # - { path: ^/admin, roles: ROLE_ADMIN }
         # - { path: ^/profile, roles: ROLE_USER }
 

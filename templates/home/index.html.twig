@@ -2,27 +2,28 @@
 
 {% block content_title %}ACA{% endblock %}
 
-{% block body %}
-    <h1>My Units</h1>
+{% block content_body %}
+    <h2 class="h5 mb-3">Inicio</h2>
 
-    <p>
-        Logged in as <strong>{{ app.user.email }}</strong>
+    <p class="mb-2">
+        Accesó como <strong>{{ app.user.email }}</strong>
     </p>
 
-    <p>
-        Units visible: <strong>{{ units|length }}</strong>
+    <p class="mb-3">
+        Buscar: <strong>{{ q ?? '—' }}</strong><br>
+        Total de unidades encontradas: <strong>{{ pager.nbResults }}</strong>
     </p>
 
     {% if assignments is not null %}
-        <h2>My assignments</h2>
+        <h3 class="h6 mt-4">Mis asignaciones</h3>
 
-        <table>
+        <table class="table table-sm table-striped">
             <thead>
             <tr>
-                <th>Code</th>
-                <th>Unit</th>
-                <th>Assignment</th>
-                <th>Scope</th>
+                <th>Codigo</th>
+                <th>Unidad</th>
+                <th>Asignación</th>
+                <th>Alcance</th>
             </tr>
             </thead>
             <tbody>
@@ -33,32 +34,43 @@
                     <td>{{ ua.assignment.value }}</td>
                     <td>{{ ua.scope }}</td>
                 </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-
-    {% else %}
-        <h2>Units</h2>
-
-        <table>
-            <thead>
-            <tr>
-                <th>Code</th>
-                <th>Unit</th>
-                <th>Team</th>
-                <th>Subfondo</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for u in units %}
-                <tr>
-                    <td>{{ u.code }}</td>
-                    <td>{{ u.name }}</td>
-                    <td>{{ u.team ? u.team.number : '' }}</td>
-                    <td>{{ u.subfondo ? u.subfondo.name : '' }}</td>
-                </tr>
+            {% else %}
+                <tr><td colspan="4" class="text-muted">No assignments.</td></tr>
             {% endfor %}
             </tbody>
         </table>
     {% endif %}
+
+    <h3 class="h6 mt-4">Unidades</h3>
+
+    <table class="table table-sm table-hover">
+        <thead>
+        <tr>
+            <th>Codigo</th>
+            <th>Unidad</th>
+            <th>Equipo</th>
+            <th>Subfondo</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for u in pager %}
+            <tr>
+                <td>{{ u.code }}</td>
+                <td>{{ u.name }}</td>
+                <td>{{ u.team ? u.team.number : '' }}</td>
+                <td>{{ u.subfondo ? u.subfondo.name : '' }}</td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="4" class="text-muted">No results.</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    {# Keep q in the URL when going to page 2 #}
+    {{ pagerfanta(pager, null, {
+        routeName: 'app_home',
+        routeParams: q ? { q: q } : {}
+    }) }}
 {% endblock %}
