@@ -3,7 +3,8 @@ framework:
     secret: '%env(APP_SECRET)%'
 
     # Note that the session will be started ONLY if you read or write from it.
-    session: true
+    session:
+        name: ACA_SFSESSID
 
     #esi: true
     #fragments: true

@@ -43,34 +43,62 @@
 
     <h3 class="h6 mt-4">Unidades</h3>
 
-    <table class="table table-sm table-hover">
-        <thead>
-        <tr>
-            <th>Codigo</th>
-            <th>Unidad</th>
-            <th>Equipo</th>
-            <th>Subfondo</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for u in pager %}
-            <tr>
-                <td>{{ u.code }}</td>
-                <td>{{ u.name }}</td>
-                <td>{{ u.team ? u.team.number : '' }}</td>
-                <td>{{ u.subfondo ? u.subfondo.name : '' }}</td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="4" class="text-muted">No results.</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+{#    <table class="table table-sm table-hover">#}
+{#        <thead>#}
+{#        <tr>#}
+{#            <th>Codigo</th>#}
+{#            <th>Unidad</th>#}
+{#            <th>Equipo</th>#}
+{#            <th>Subfondo</th>#}
+{#        </tr>#}
+{#        </thead>#}
+{#        <tbody>#}
+{#        {% for u in pager %}#}
+{#            <tr>#}
+{#                <td>{{ u.code }}</td>#}
+{#                <td>{{ u.name }}</td>#}
+{#                <td>{{ u.team ? u.team.number : '' }}</td>#}
+{#                <td>{{ u.subfondo ? u.subfondo.name : '' }}</td>#}
+{#            </tr>#}
+{#        {% else %}#}
+{#            <tr>#}
+{#                <td colspan="4" class="text-muted">No results.</td>#}
+{#            </tr>#}
+{#        {% endfor %}#}
+{#        </tbody>#}
+{#    </table>#}
+
+    <turbo-frame id="units-list-{{ pager.currentPage }}" target="_top">
+        <div class="row g-3">
+            {% for u in pager %}
+                <div class="col-12 col-lg-6">
+                    {{ include('unit/_unit_card.html.twig', { u: u }) }}
+                </div>
+            {% else %}
+                <div class="col-12">
+                    <div class="alert alert-secondary mb-0">
+                        No hay unidades para mostrar.
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        {# Vehicles-style: lazy-load the next page into the next frame #}
+        {% if pager.hasNextPage %}
+            <turbo-frame
+                id="units-list-{{ pager.nextPage }}"
+                src="{{ path('app_home', app.request.query.all|merge({'page': pager.nextPage})) }}"
+                loading="lazy"
+            >
+                <div class="text-center my-3">Cargando…</div>
+            </turbo-frame>
+        {% endif %}
+    </turbo-frame>
+
 
     {# Keep q in the URL when going to page 2 #}
-    {{ pagerfanta(pager, null, {
-        routeName: 'app_home',
-        routeParams: q ? { q: q } : {}
-    }) }}
+{#    {{ pagerfanta(pager, null, {#}
+{#        routeName: 'app_home',#}
+{#        routeParams: q ? { q: q } : {}#}
+{#    }) }}#}
 {% endblock %}

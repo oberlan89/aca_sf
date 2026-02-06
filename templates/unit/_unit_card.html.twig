@@ -1,0 +1,38 @@
+<div class="aca-card p-3">
+    <div class="d-flex justify-content-between align-items-start gap-3">
+        <div class="flex-grow-1">
+            <div class="aca-unit-name">{{ u.name }}</div>
+            <div class="aca-unit-code">{{ u.code }}</div>
+
+            <div class="mt-2 d-flex gap-2 flex-wrap">
+                <span class="badge aca-badge">Equipo {{ u.team.number }}</span>
+                <span class="badge text-bg-light border">{{ u.subfondo.name }}</span>
+            </div>
+        </div>
+
+        <div class="d-flex flex-column gap-2">
+            <a class="btn btn-sm btn-outline-secondary"
+               href="{{ path('app_unit_show', {id: u.id}) }}">
+                Ver
+            </a>
+
+            <button class="btn btn-sm btn-aca-secondary js-unit-toggle"
+                    type="button"
+                    data-unit-id="{{ u.id }}"
+                    data-url="{{ path('app_unit_children', {id: u.id}) }}"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#children-{{ u.id }}">
+                Subramas
+            </button>
+        </div>
+    </div>
+
+    <div class="collapse mt-3" id="children-{{ u.id }}">
+        <div class="border rounded-3 p-2 bg-light">
+            <div class="js-children-container" data-unit-id="{{ u.id }}">
+                <div class="aca-label">Cargando...</div>
+            </div>
+        </div>
+    </div>
+
+</div>

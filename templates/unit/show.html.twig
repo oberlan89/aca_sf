@@ -19,13 +19,12 @@
         </tbody>
     </table>
 
-    {% if is_granted('UNIT_EDIT') %}
-        <a href="{{ path('app_unit_index') }}">back to list</a>
-    {% endif %}
+        <a href="{{ path('app_home') }}">Regreso</a>
 
-    {% if is_granted('UNIT_DELETE') %}
+    {% if is_granted('UNIT_EDIT') %}
         <a href="{{ path('app_unit_edit', {'id': unit.id}) }}">edit</a>
     {% endif %}
-
-    {{ include('unit/_delete_form.html.twig') }}
+    {% if is_granted('UNIT_DELETE') %}
+        {{ include('unit/_delete_form.html.twig') }}
+    {% endif %}
 {% endblock %}

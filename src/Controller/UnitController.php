@@ -5,18 +5,20 @@ namespace App\Controller;
 use App\Entity\Unit;
 use App\Form\UnitType;
 use App\Repository\UnitRepository;
+use App\Service\UnitTreeBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/unit')]
 final class UnitController extends AbstractController
 {
     #[Route('', name: 'app_unit_index', methods: ['GET'])]
-
-    public function index(UnitRepository $unitRepository, Request $request): Response
+    #[IsGranted('ROLE_ADMIN')]
+    public function index(UnitRepository $unitRepository, UnitTreeBuilder$treeBuilder, Request $request): Response
     {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
@@ -24,7 +26,8 @@ final class UnitController extends AbstractController
         $visibleUnits = $unitRepository->findVisibleForUser($user);
 
         // Build "visible tree" (skipping non-generating and skipping units outside visibility)
-        [$childrenByVisibleParent] = $this->buildVisibleTree($visibleUnits);
+        [$childrenByVisibleParent] = $treeBuilder->buildVisibleTree($visibleUnits);
+
 
         $topUnits = $childrenByVisibleParent[null] ?? [];
 
@@ -34,6 +37,7 @@ final class UnitController extends AbstractController
     }
 
     #[Route('/new', name: 'app_unit_new', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $this->denyAccessUnlessGranted('UNIT_CREATE');
@@ -65,6 +69,7 @@ final class UnitController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'app_unit_edit', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function edit(Request $request, Unit $unit, EntityManagerInterface $entityManager): Response
     {
         $this->denyAccessUnlessGranted('UNIT_EDIT', $unit);
@@ -84,6 +89,7 @@ final class UnitController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_unit_delete', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function delete(Request $request, Unit $unit, EntityManagerInterface $entityManager): Response
     {
         $this->denyAccessUnlessGranted('UNIT_EDIT', $unit);
@@ -97,14 +103,14 @@ final class UnitController extends AbstractController
 
     #[Route('/{id}/children', name: 'app_unit_children', methods: ['GET'])]
 
-    public function children(Unit $unit, UnitRepository $unitRepository, Request $request): Response
+    public function children(Unit $unit, UnitRepository $unitRepository, UnitTreeBuilder $treeBuilder, Request $request): Response
     {
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
 
         $visibleUnits = $unitRepository->findVisibleForUser($user);
 
-        [$childrenByVisibleParent] = $this->buildVisibleTree($visibleUnits);
+        [$childrenByVisibleParent] = $treeBuilder->buildVisibleTree($visibleUnits);
 
         $children = $childrenByVisibleParent[$unit->getId()] ?? [];
 
@@ -114,37 +120,5 @@ final class UnitController extends AbstractController
         ]);
     }
 
-    /**
-     * @param Unit[] $visibleUnits (already filtered to isGenerating=true AND role visibility)
-     * @return array{0: array<int|null, Unit[]>}
-     */
-    private function buildVisibleTree(array $visibleUnits): array
-    {
-        $visibleById = [];
-        foreach ($visibleUnits as $u) {
-            $visibleById[$u->getId()] = $u;
-        }
-
-        $childrenByVisibleParent = [];
-
-        foreach ($visibleUnits as $u) {
-            // climb until we find a visible ancestor
-            $p = $u->getParent();
-            while ($p !== null && !isset($visibleById[$p->getId()])) {
-                $p = $p->getParent();
-            }
-
-            $parentId = $p?->getId(); // null => top-level
-            $childrenByVisibleParent[$parentId][] = $u;
-        }
-
-        // Optional: sort each bucket by name (or by code)
-        foreach ($childrenByVisibleParent as $pid => $bucket) {
-            usort($bucket, fn(Unit $a, Unit $b) => strcmp($a->getName(), $b->getName()));
-            $childrenByVisibleParent[$pid] = $bucket;
-        }
-
-        return [$childrenByVisibleParent];
-    }
 
 }

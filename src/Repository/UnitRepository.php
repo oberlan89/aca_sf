@@ -32,9 +32,10 @@ class UnitRepository extends ServiceEntityRepository
     public function createVisibleForUserQueryBuilder(User $user = null): QueryBuilder
     {
         $queryBuilder = $this->addOrderedByCodeQueryBuilder()
-            ->leftJoin('unit.team', 'team')
-            ->leftJoin('unit.subfondo', 'subfondo')
-            ->leftJoin('unit.unitAssignments', 'unitAssignment');
+            ->leftJoin('unit.team', 'team')->addSelect('team')
+            ->leftJoin('unit.subfondo', 'subfondo')->addSelect('subfondo')
+            ->leftJoin('unit.parent', 'parent')->addSelect('parent')
+            ->leftJoin('unit.unitAssignments', 'unitAssignment')->addSelect('unitAssignment');
 
         $roles = $user->getRoles();
 

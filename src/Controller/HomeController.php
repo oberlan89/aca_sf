@@ -5,7 +5,8 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Repository\UnitAssignmentRepository;
 use App\Repository\UnitRepository;
-use Pagerfanta\Doctrine\ORM\QueryAdapter;
+use App\Service\UnitTreeBuilder;
+use Pagerfanta\Adapter\ArrayAdapter;
 use Pagerfanta\Exception\OutOfRangeCurrentPageException;
 use Pagerfanta\Pagerfanta;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -21,41 +22,69 @@ final class HomeController extends AbstractController
     public function index(
         Request $request,
         UnitRepository $unitRepo,
-        UnitAssignmentRepository $uaRepo
+        UnitAssignmentRepository $uaRepo,
+        UnitTreeBuilder $treeBuilder,
     ): Response
     {
         /** @var User $user */
         $user = $this->getUser();
 
-        // 1) Read the search text from the top bar: /?q=something
+        // Search
         $q = trim((string) $request->query->get('q', ''));
         $q = ($q !== '') ? $q : null;
 
-        // 2) Build the query (this is what allows pagination)
-        $qb = $unitRepo->createSearchVisibleForUserQueryBuilder($user, $q);
+        // Visible units (already filtered by your repository search)
+        $units = $unitRepo
+            ->createSearchVisibleForUserQueryBuilder($user, $q)
+            ->getQuery()
+            ->getResult();
 
-        // 3) Create a Pagerfanta pager
-        $pager = new Pagerfanta(new QueryAdapter($qb));
-        $pager->setMaxPerPage(25);
+        // Roles
+        $roles = $user->getRoles();
+        $isStaff = in_array('ROLE_ADMIN', $roles, true) || in_array('ROLE_ADVISOR', $roles, true);
 
+        // Page (only once)
         $page = max(1, $request->query->getInt('page', 1));
-        try {
-            $pager->setCurrentPage($page);
-        } catch (OutOfRangeCurrentPageException) {
-            $pager->setCurrentPage(1);
+
+        // Single-unit redirect (portal users only)
+        if (!$isStaff && count($units) === 1 && $q === null && $page === 1) {
+            return $this->redirectToRoute('app_unit_show', ['id' => $units[0]->getId()]);
         }
 
-        // 4) Keep assignments feature exactly as before
+        // Assignments (same as before)
         $assignments = null;
-        $roles = $user->getRoles();
-        if (!in_array('ROLE_ADMIN', $roles, true) && !in_array('ROLE_ADVISOR', $roles, true) && $user->getServant()) {
+        if (!$isStaff && $user->getServant()) {
             $assignments = $uaRepo->findGeneratingForServant($user->getServant());
         }
 
+        // Build visible tree
+        [$childrenByVisibleParent] = $treeBuilder->buildVisibleTree($units);
+        $rootUnits = $childrenByVisibleParent[null] ?? [];
+
+        // Pager must paginate ROOT units (this makes page 2 actually change cards)
+        $pager = new Pagerfanta(new ArrayAdapter($rootUnits));
+        $pager->setMaxPerPage(10);
+
+        try {
+            $pager->setCurrentPage($page);
+        } catch (OutOfRangeCurrentPageException $e) {
+            throw $this->createNotFoundException();
+        }
+
         return $this->render('home/index.html.twig', [
-            'pager' => $pager,
-            'q' => $q,
+            'units' => $units, // optional; can keep for debugging
             'assignments' => $assignments,
+
+            'childrenByVisibleParent' => $childrenByVisibleParent,
+            'isStaff' => $isStaff,
+            'q' => $q,
+
+            // IMPORTANT: template should iterate over `pager` for the cards
+            'pager' => $pager,
+
+            // optional: if template shows roots count somewhere
+            'rootUnits' => $rootUnits,
         ]);
     }
+
 }
