@@ -18,13 +18,16 @@
                 <i class="fa-solid fa-house me-2"></i> Inicio
             </a>
 
-            <a class="nav-link {% if route starts with 'app_unit' %}active{% endif %}" href="{{ path('app_unit_index') }}">
-                <i class="fa-solid fa-sitemap me-2"></i> Unidades
-            </a>
+
 
             {% if is_granted('ROLE_ADMIN') %}
                 <hr>
+
                 <div class="aca-label">Administración</div>
+
+                <a class="nav-link {% if route starts with 'app_unit' %}active{% endif %}" href="{{ path('app_unit_index') }}">
+                    <i class="fa-solid fa-sitemap me-2"></i> Unidades
+                </a>
 
                 <a class="nav-link {% if route starts with 'app_user' %}active{% endif %}" href="{{ path('app_user_index') }}">
                     <i class="fa-solid fa-users me-2"></i> Usuarios

@@ -2,7 +2,6 @@
 
 namespace App\Repository;
 
-use App\Entity\Servant;
 use App\Entity\Unit;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -29,13 +28,13 @@ class UnitRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function createVisibleForUserQueryBuilder(User $user = null): QueryBuilder
+    public function createVisibleForUserQueryBuilder(User $user): QueryBuilder
     {
         $queryBuilder = $this->addOrderedByCodeQueryBuilder()
             ->leftJoin('unit.team', 'team')->addSelect('team')
             ->leftJoin('unit.subfondo', 'subfondo')->addSelect('subfondo')
-            ->leftJoin('unit.parent', 'parent')->addSelect('parent')
-            ->leftJoin('unit.unitAssignments', 'unitAssignment')->addSelect('unitAssignment');
+            ->leftJoin('unit.parent', 'parent')->addSelect('parent');
+
 
         $roles = $user->getRoles();
 
@@ -62,17 +61,19 @@ class UnitRepository extends ServiceEntityRepository
             return $queryBuilder->andWhere('1 = 0');
         }
 
-        return $queryBuilder->andWhere('unitAssignment.servant = :servant')
-            ->setParameter('servant', $servant)
-            ->distinct();
+        return $queryBuilder
+            ->andWhere('EXISTS (
+                SELECT 1
+                FROM App\Entity\UnitAssignment ua
+                WHERE ua.unit = unit AND ua.servant = :servant
+            )')
+            ->setParameter('servant', $servant);
+
     }
 
     public function createSearchVisibleForUserQueryBuilder(User $user, ?string $q): QueryBuilder
     {
-        $queryBuilder = $this->createVisibleForUserQueryBuilder($user)
-            ->leftJoin('team.users', 'user')
-            ->leftJoin('user.servant', 'servant')
-            ->distinct();
+        $queryBuilder = $this->createVisibleForUserQueryBuilder($user);
 
         if ($q) {
             $q = trim((string) $q);
@@ -81,9 +82,28 @@ class UnitRepository extends ServiceEntityRepository
                 ? mb_strtolower($q, 'UTF-8')
                 : strtolower($q);
 
-            $queryBuilder->andWhere("LOWER(unit.code) LIKE :q OR LOWER(subfondo.name) LIKE :q OR LOWER(unit.name) LIKE :q OR CONCAT('', team.number) LIKE :q OR LOWER(user.email) LIKE :q OR LOWER(servant.firstName) LIKE :q OR LOWER(servant.lastName1) LIKE :q OR LOWER(servant.lastName2) LIKE :q")
+            $queryBuilder->andWhere("
+                UNACCENT(LOWER(unit.code)) LIKE UNACCENT(:q)
+                OR UNACCENT(LOWER(subfondo.name)) LIKE UNACCENT(:q)
+                OR UNACCENT(LOWER(unit.name)) LIKE UNACCENT(:q)
+                OR CONCAT('', team.number) LIKE :q
+                OR EXISTS (
+                    SELECT 1
+                    FROM App\Entity\User u2
+                    LEFT JOIN u2.servant s2
+                    WHERE u2.team = team AND (
+                        UNACCENT(LOWER(u2.email)) LIKE UNACCENT(:q)
+                        OR UNACCENT(LOWER(s2.firstName)) LIKE UNACCENT(:q)
+                        OR UNACCENT(LOWER(s2.lastName1)) LIKE UNACCENT(:q)
+                        OR UNACCENT(LOWER(s2.lastName2)) LIKE UNACCENT(:q)
+                    )
+                )
+            ")
                 ->setParameter('q', '%'.$qLower.'%');
+
+
         }
+
 
         return $queryBuilder;
     }

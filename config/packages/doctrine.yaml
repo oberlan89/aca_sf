@@ -27,6 +27,10 @@ doctrine:
         controller_resolver:
             auto_mapping: false
 
+        dql:
+            string_functions:
+                UNACCENT: App\Doctrine\Dql\Unaccent
+
 when@test:
     doctrine:
         dbal:
